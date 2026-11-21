@@ -1,0 +1,116 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "De'Longhi Coffee Link account",
+        "description": "Log in with the account you use in the De'Longhi Coffee Link app.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      },
+      "device": {
+        "title": "Choose machine",
+        "data": {
+          "dsn": "Machine"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate",
+        "description": "The De'Longhi session expired. Log in again.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Login failed. Check email and password.",
+      "cannot_connect": "Could not reach the De'Longhi cloud.",
+      "no_devices": "No coffee machine found on this account."
+    },
+    "abort": {
+      "already_configured": "This machine is already configured.",
+      "reauth_successful": "Re-authentication successful."
+    }
+  },
+  "entity": {
+    "switch": {
+      "power": {
+        "name": "Power"
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "Status",
+        "state": {
+          "standby": "Standby",
+          "waking_up": "Waking up",
+          "going_to_sleep": "Going to sleep",
+          "descaling": "Descaling",
+          "preparing_steam": "Preparing steam",
+          "ready": "Ready",
+          "rinsing": "Rinsing",
+          "preparing_milk": "Preparing milk",
+          "dispensing_hot_water": "Dispensing hot water",
+          "cleaning_milk": "Cleaning milk",
+          "rinsing_water_filter": "Rinsing water filter",
+          "preparing_chocolate": "Preparing chocolate",
+          "unknown": "Unknown"
+        }
+      },
+      "progress": {
+        "name": "Progress"
+      },
+      "action": {
+        "name": "Action code"
+      },
+      "total_beverages": {
+        "name": "Total beverages"
+      },
+      "espressos": {
+        "name": "Espressos"
+      },
+      "coffees": {
+        "name": "Coffees"
+      },
+      "long_coffees": {
+        "name": "Long coffees"
+      },
+      "grounds": {
+        "name": "Grounds container count"
+      },
+      "descale_count": {
+        "name": "Descaling count"
+      },
+      "water_hardness": {
+        "name": "Water hardness setting"
+      }
+    },
+    "binary_sensor": {
+      "busy": {
+        "name": "Busy"
+      },
+      "water_tank_empty": {
+        "name": "Water tank empty"
+      },
+      "water_tank_open": {
+        "name": "Water tank removed"
+      },
+      "waste_container_full": {
+        "name": "Grounds container full"
+      },
+      "waste_container_missing": {
+        "name": "Grounds container missing"
+      }
+    },
+    "button": {
+      "stop": {
+        "name": "Stop drink"
+      },
+      "learn_recipes": {
+        "name": "Learn drinks from app"
+      }
+    }
+  }
+}
