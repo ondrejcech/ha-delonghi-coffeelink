@@ -25,10 +25,9 @@ Reports are welcome.
 
 | Feature | Status |
 |---|---|
-| Login, status, progress, counters, power on / standby, espresso brew | ✅ verified on the machine |
+| Login, status, progress, counters, power on / standby, espresso brew, stop | ✅ verified on the machine |
 | Water tank removed, grounds container missing | ✅ consistent with recorded monitor frames |
 | Water tank empty, grounds container full | ⚠️ bit positions not yet verified |
-| Stop drink | ⚠️ frame derivation verified against the app, not yet on the machine |
 
 ### How drinks are learned
 
@@ -59,7 +58,8 @@ if the cloud session is lost. If that fails, Home Assistant asks you to re-authe
 
 * **Cloud only.** Commands and state go through the Ayla EU cloud the official app uses.
 * **Live status.** The machine only pushes its status while an "app" is registered, so the
-  integration registers its own app id (`CAFE4A55`) and renews it every 4 minutes. It
+  integration registers its own app id (`CAFE4A55`) and renews it every 4 minutes
+  (a registration lapses after exactly 5 minutes). It
   never takes over while the phone app is connected; it then reads the status the phone
   app triggers.
 * **Polling.** Every 60 s in standby, every 15 s when ready, every 3 s while busy.

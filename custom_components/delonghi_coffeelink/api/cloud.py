@@ -196,6 +196,9 @@ class Machine:
     def keepalive(self, registered: str | None, every: float = 240, min_gap: float = 30) -> bool:
         """Register when nobody is, or renew our own registration periodically.
 
+        A registration lapses 5 minutes after it was written (measured), so
+        `every` must stay below 300 s.
+
         Never takes over while another app (e.g. the phone app) is registered.
         Writes at most once per `min_gap` seconds. Returns True if it registered.
         """

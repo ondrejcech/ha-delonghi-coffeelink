@@ -65,3 +65,10 @@ def test_derive_stop_keeps_0x27_value_bytes():
     stop = p.derive_stop(start)
     assert stop[6:-2].hex() == "010027" "0204" "0800" "06"
     assert p.crc_ok(stop) and stop[1] == len(stop) - 1
+
+
+def test_standby_is_not_busy():
+    # captured: standby, action 2 @ 100% lingering after shutdown
+    frame = p.with_crc(bytes.fromhex("d012750f00840000000002640000000000"))
+    m = p.parse_monitor(__import__("base64").b64encode(frame).decode())
+    assert m.status_name == "standby" and m.action == 2 and not m.is_busy and not m.is_on

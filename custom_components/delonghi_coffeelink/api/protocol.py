@@ -182,7 +182,8 @@ class MonitorState:
 
     @property
     def is_busy(self) -> bool:
-        return self.action != 0
+        # In standby the machine keeps the last shutdown action (e.g. 2 @ 100%).
+        return self.status != 0 and self.action != 0
 
     @property
     def water_tank_empty(self) -> bool:
