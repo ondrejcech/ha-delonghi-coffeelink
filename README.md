@@ -21,6 +21,15 @@ Reports are welcome.
 | Problem sensors | Water tank empty / removed, grounds container full / missing |
 | Counters | Total beverages, espressos, coffees, long coffees, grounds count, descaling count |
 
+### Verification status (Eletta Explore, Striker cb)
+
+| Feature | Status |
+|---|---|
+| Login, status, progress, counters, power on / standby, espresso brew | ✅ verified on the machine |
+| Water tank removed, grounds container missing | ✅ consistent with recorded monitor frames |
+| Water tank empty, grounds container full | ⚠️ bit positions not yet verified |
+| Stop drink | ⚠️ frame derivation verified against the app, not yet on the machine |
+
 ### How drinks are learned
 
 Recipes differ per machine and per user profile, so the integration doesn't guess the

@@ -193,13 +193,16 @@ class Machine:
         self.client.write(self.dsn, p.PROP_CONNECTED, p.encode_registration(self.app_id))
         self._last_register = time.time()
 
-    def keepalive(self, registered: str | None, every: float = 240) -> bool:
+    def keepalive(self, registered: str | None, every: float = 240, min_gap: float = 30) -> bool:
         """Register when nobody is, or renew our own registration periodically.
 
         Never takes over while another app (e.g. the phone app) is registered.
-        Returns True if a registration was written.
+        Writes at most once per `min_gap` seconds. Returns True if it registered.
         """
-        if registered is None or (registered == self.app_id and time.time() - self._last_register > every):
+        since = time.time() - self._last_register
+        if since < min_gap:
+            return False
+        if registered is None or (registered == self.app_id and since > every):
             self.register()
             return True
         return False

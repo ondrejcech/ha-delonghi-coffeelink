@@ -127,17 +127,12 @@ def derive_stop(start_frame: bytes) -> bytes:
 
     Verified against the official app's hot-water start/stop pair.
     """
-    body = start_frame[6:-2]  # params ... 0x06 (end marker)
-    out = bytearray()
-    i = 0
-    while i < len(body) - 1:
-        if body[i] == 0x27:
-            i += 2
-            continue
-        out.append(body[i])
-        i += 1
-    out += body[-1:]
-    frame = bytearray([0x0D, 0, 0x83, 0xF0, start_frame[4], OP_STOP]) + out
+    body = bytes(start_frame[6:-2])  # params ... 0x06 (end marker)
+    # The app puts "27 xx" last, right before the 0x06 end marker. Only strip it
+    # there: a value byte elsewhere may legitimately be 0x27 (e.g. 39 ml).
+    if len(body) >= 3 and body[-3] == 0x27:
+        body = body[:-3] + body[-1:]
+    frame = bytearray([0x0D, 0, 0x83, 0xF0, start_frame[4], OP_STOP]) + body
     frame[1] = len(frame) + 1
     return with_crc(bytes(frame))
 

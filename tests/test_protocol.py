@@ -57,3 +57,11 @@ def test_recipe_from_request():
 
 def test_serial():
     assert p.decode_serial("0BuhDwDNVEVTVDAwWlowMDAwMDBYMDAwMADvLg==") == "TEST00ZZ000000X0000"
+
+
+def test_derive_stop_keeps_0x27_value_bytes():
+    # A 39 ml (0x27) coffee quantity must survive; only the trailing "27 01" is dropped.
+    start = p.with_crc(bytes.fromhex("0d1183f00103" "010027" "0204" "0800" "2701" "06"))
+    stop = p.derive_stop(start)
+    assert stop[6:-2].hex() == "010027" "0204" "0800" "06"
+    assert p.crc_ok(stop) and stop[1] == len(stop) - 1
