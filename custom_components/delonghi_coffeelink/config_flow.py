@@ -10,8 +10,8 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 
-from .api.auth import LoginError, login
-from .api.cloud import AylaClient, CloudError, Tokens
+from .api.auth import InvalidCredentials, LoginError, login
+from .api.cloud import AuthError, AylaClient, CloudError, Tokens
 from .const import CONF_DSN, CONF_REFRESH_TOKEN, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -43,10 +43,10 @@ class CoffeeLinkConfigFlow(ConfigFlow, domain=DOMAIN):
             self._refresh, self._devices = await self.hass.async_add_executor_job(
                 _login_and_list, self._email, self._password
             )
-        except LoginError as e:
+        except (InvalidCredentials, AuthError) as e:
             _LOGGER.warning("De'Longhi login failed: %s", e)
             return "invalid_auth"
-        except (CloudError, OSError) as e:
+        except (LoginError, CloudError, OSError) as e:
             _LOGGER.warning("De'Longhi cloud unreachable: %s", e)
             return "cannot_connect"
         if not self._devices:
@@ -87,7 +87,10 @@ class CoffeeLinkConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         entry = self._get_reauth_entry()
         if user_input is not None:
-            if not (err := await self._try_login(user_input)):
+            err = await self._try_login(user_input)
+            if not err and not any(d.get("dsn") == entry.data[CONF_DSN] for d in self._devices):
+                err = "wrong_account"
+            if not err:
                 return self.async_update_reload_and_abort(
                     entry, data={**entry.data, **self._entry_data(entry.data[CONF_DSN]),
                                  "access_token": None, "expires_at": 0.0},

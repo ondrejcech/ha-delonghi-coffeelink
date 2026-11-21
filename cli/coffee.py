@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from datetime import datetime, timezone
@@ -23,7 +24,7 @@ sys.path.insert(0, str(ROOT / "custom_components" / "delonghi_coffeelink"))
 
 from api import protocol as p  # noqa: E402
 from api.auth import LoginError, login  # noqa: E402
-from api.cloud import AuthError, AylaClient, Machine, Tokens  # noqa: E402
+from api.cloud import AuthError, AylaClient, CloudError, Machine, Tokens  # noqa: E402
 
 SECRETS = ROOT / ".secrets"
 TOKEN_FILE = SECRETS / "token.json"
@@ -38,8 +39,9 @@ def _load(path: Path) -> dict:
 def _save(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".tmp")
-    tmp.write_text(json.dumps(data, indent=2))
-    tmp.chmod(0o600)
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)  # never world-readable
+    with os.fdopen(fd, "w") as f:
+        json.dump(data, f, indent=2)
     tmp.replace(path)
 
 
@@ -170,6 +172,8 @@ def main() -> None:
                 time.sleep(args.interval)
     except (AuthError, LoginError) as e:
         sys.exit(f"Auth problem: {e}\nCheck {CREDS_FILE} and run: coffee.py login")
+    except (CloudError, OSError) as e:
+        sys.exit(f"Cloud problem: {e}")
 
 
 if __name__ == "__main__":

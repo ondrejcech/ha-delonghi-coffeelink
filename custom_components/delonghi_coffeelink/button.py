@@ -48,8 +48,8 @@ class BrewButton(CoffeeEntity, ButtonEntity):
                 f"Machine not ready to brew (status {m.status_name if m else 'unknown'}"
                 f"{', busy' if m and m.is_busy else ''})"
             )
-        self.coordinator.last_started = recipe
         await self.coordinator.async_command(self.coordinator.machine.brew, recipe)
+        self.coordinator.last_started = recipe
 
 
 class StopButton(CoffeeEntity, ButtonEntity):

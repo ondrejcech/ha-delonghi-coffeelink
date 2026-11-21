@@ -10,6 +10,7 @@ monitor frame (`d302_monitor_machine`) every couple of seconds.
 from __future__ import annotations
 
 import base64
+import binascii
 import time
 from dataclasses import dataclass, field
 
@@ -115,10 +116,15 @@ def app_id_from_cloud(value: str | int | None) -> str | None:
 
 def split_request(b64: str) -> tuple[bytes, str] | None:
     """Split a request datapoint into (frame, app id hex)."""
-    raw = base64.b64decode(b64 or "")
+    try:
+        raw = base64.b64decode(b64 or "")
+    except (binascii.Error, ValueError):
+        return None
     if len(raw) < 12 or raw[0] != 0x0D:
         return None
     frame = raw[: raw[1] + 1]
+    if len(frame) < 8 or len(frame) != raw[1] + 1:
+        return None
     return frame, raw[-4:].hex().upper()
 
 
@@ -205,7 +211,10 @@ class MonitorState:
 def parse_monitor(b64: str | None) -> MonitorState | None:
     if not b64:
         return None
-    raw = base64.b64decode(b64)
+    try:
+        raw = base64.b64decode(b64)
+    except (binascii.Error, ValueError):
+        return None
     if len(raw) < 4 or raw[0] != 0xD0:
         return None
     length = raw[1]
@@ -229,5 +238,8 @@ def parse_monitor(b64: str | None) -> MonitorState | None:
 def decode_serial(b64: str | None) -> str | None:
     if not b64:
         return None
-    raw = base64.b64decode(b64)
+    try:
+        raw = base64.b64decode(b64)
+    except (binascii.Error, ValueError):
+        return None
     return raw[6:-3].decode("ascii", errors="replace").strip("\x00") or None

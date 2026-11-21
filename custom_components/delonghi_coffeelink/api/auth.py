@@ -40,17 +40,21 @@ class LoginError(RuntimeError):
     """Raised with a step name; never includes credentials."""
 
 
+class InvalidCredentials(LoginError):
+    """The account itself was rejected (wrong password, locked, 2FA/captcha)."""
+
+
 def _qs(url: str, key: str) -> str | None:
     return parse_qs(urlparse(url).query).get(key, [None])[0]
 
 
-def _gigya(resp: requests.Response, step: str) -> dict:
+def _gigya(resp: requests.Response, step: str, error: type[LoginError] = LoginError) -> dict:
     try:
         data = resp.json()
     except ValueError as e:
         raise LoginError(f"{step}: non-JSON response (HTTP {resp.status_code})") from e
     if data.get("errorCode", 0) != 0:
-        raise LoginError(f"{step}: {data.get('errorCode')} {data.get('errorMessage')} {data.get('errorDetails', '')}")
+        raise error(f"{step}: {data.get('errorCode')} {data.get('errorMessage')} {data.get('errorDetails', '')}")
     return data
 
 
@@ -108,10 +112,10 @@ def login(email: str, password: str, lang: str = "en") -> str:
         "authMode": "cookie",
         "gmid": ids.get("gmid"),
         "ucid": ids.get("ucid"),
-    }, timeout=TIMEOUT), "accounts.login")
+    }, timeout=TIMEOUT), "accounts.login", InvalidCredentials)
     login_token = (acc.get("sessionInfo") or {}).get("login_token")
     if not login_token:
-        raise LoginError("accounts.login: no session returned (2FA or captcha required?)")
+        raise InvalidCredentials("accounts.login: no session returned (2FA or captcha required?)")
 
     # 4. Signed user info for consent
     ui = _gigya(s.post("https://socialize.eu1.gigya.com/socialize.getUserInfo", data={

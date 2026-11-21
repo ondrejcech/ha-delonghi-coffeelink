@@ -27,7 +27,8 @@
     "error": {
       "invalid_auth": "Login failed. Check email and password.",
       "cannot_connect": "Could not reach the De'Longhi cloud.",
-      "no_devices": "No coffee machine found on this account."
+      "no_devices": "No coffee machine found on this account.",
+      "wrong_account": "This machine is not on that account. Log in with the account it was set up with."
     },
     "abort": {
       "already_configured": "This machine is already configured.",

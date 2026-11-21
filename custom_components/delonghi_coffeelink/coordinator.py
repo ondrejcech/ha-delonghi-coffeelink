@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
@@ -44,6 +44,7 @@ class CoffeeCoordinator(DataUpdateCoordinator[CoffeeData]):
         self._last_online = 0.0
         self._last_learn = 0.0
         self._recipe_listeners: list = []
+        self._fast_until = 0.0
 
     async def async_load_recipes(self) -> None:
         data = await self._store.async_load() or {}
@@ -98,16 +99,24 @@ class CoffeeCoordinator(DataUpdateCoordinator[CoffeeData]):
                     cb(list(new.values()))
 
         m = data.state.monitor
-        if m is None or not m.is_on:
-            self.update_interval = INTERVAL_STANDBY if m and m.status == 0 else INTERVAL_IDLE
+        if time.monotonic() < self._fast_until or (m is not None and (m.is_busy or m.status in (1, 2))):
+            # Just sent a command (the monitor may still show the old state), or in transition.
+            self.update_interval = INTERVAL_BUSY
+        elif m is not None and m.status == 0:
+            self.update_interval = INTERVAL_STANDBY
         else:
-            self.update_interval = INTERVAL_BUSY if m.is_busy or m.status in (1, 2) else INTERVAL_IDLE
+            self.update_interval = INTERVAL_IDLE
         return data
 
     async def async_command(self, fn, *args) -> None:
         try:
             await self.hass.async_add_executor_job(fn, *args)
         except AuthError as e:
-            raise ConfigEntryAuthFailed(str(e)) from e
+            # ConfigEntryAuthFailed only triggers reauth from setup/updates, not from actions.
+            self.config_entry.async_start_reauth(self.hass)
+            raise HomeAssistantError(f"De'Longhi authentication failed: {e}") from e
+        except CloudError as e:
+            raise HomeAssistantError(f"De'Longhi cloud command failed: {e}") from e
+        self._fast_until = time.monotonic() + 60
         self.update_interval = INTERVAL_BUSY
         await self.async_request_refresh()

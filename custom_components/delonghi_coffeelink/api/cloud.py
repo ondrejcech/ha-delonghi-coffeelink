@@ -14,7 +14,7 @@ from typing import Callable
 import requests
 
 from . import protocol as p
-from .auth import LoginError, login
+from .auth import InvalidCredentials, LoginError, login
 
 API_URL = "https://ads-eu.aylanetworks.com/apiv1"
 OAUTH_URL = "https://user-field-eu.aylanetworks.com"
@@ -96,8 +96,11 @@ class AylaClient:
     def _relogin(self) -> None:
         try:
             refresh = login(self.email or "", self.password or "")
-        except LoginError as e:
+        except InvalidCredentials as e:
             raise AuthError(str(e)) from e
+        except LoginError as e:
+            # Cloud/page-format trouble, not bad credentials: retry later.
+            raise CloudError(str(e)) from e
         self._store(refresh, None, None)
         self._refresh_plain()
 
@@ -116,13 +119,17 @@ class AylaClient:
     def access_token(self, force: bool = False) -> str:
         with self._lock:
             if force or not self.tokens.access_token or self.tokens.expires_at < time.time() + 300:
-                if not self.tokens.refresh_token:
-                    if self.email and self.password:
-                        self._relogin()
+                try:
+                    if not self.tokens.refresh_token:
+                        if self.email and self.password:
+                            self._relogin()
+                        else:
+                            raise AuthError("No refresh token")
                     else:
-                        raise AuthError("No refresh token")
-                else:
-                    self._refresh()
+                        self._refresh()
+                except (requests.RequestException, ValueError) as e:
+                    # Network trouble or a garbled response is transient, not an auth failure.
+                    raise CloudError(f"Token refresh failed: {e}") from e
             return self.tokens.access_token  # type: ignore[return-value]
 
     # ---------------- http ----------------
@@ -143,7 +150,10 @@ class AylaClient:
                 raise AuthError("Access token rejected")
             if not r.ok:
                 raise CloudError(f"{method} {path}: HTTP {r.status_code} {r.text[:200]}")
-            return r.json() if r.content else None
+            try:
+                return r.json() if r.content else None
+            except ValueError as e:
+                raise CloudError(f"{method} {path}: invalid JSON response") from e
         raise CloudError("unreachable")
 
     def get(self, path: str):
