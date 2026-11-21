@@ -8,6 +8,11 @@ only talks to the cloud: its local LAN mode is disabled. Other Coffee Link machi
 the same protocol (Eletta Explore, PrimaDonna Soul, Dinamica Plus …) will probably work too.
 Reports are welcome.
 
+[![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ondrejcech&repository=ha-delonghi-coffeelink&category=integration)
+[![Open your Home Assistant instance and start setting up De'Longhi Coffee Link.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=delonghi_coffeelink)
+[![Release](https://img.shields.io/github/v/release/ondrejcech/ha-delonghi-coffeelink?style=flat-square)](https://github.com/ondrejcech/ha-delonghi-coffeelink/releases)
+[![License](https://img.shields.io/github/license/ondrejcech/ha-delonghi-coffeelink?style=flat-square)](LICENSE)
+
 ## Features
 
 | Entity | What it does |
@@ -40,7 +45,12 @@ press *Learn drinks from app*). A button for that drink then appears. Your app s
 ## Installation
 
 ### HACS (recommended)
-1. HACS → ⋮ → *Custom repositories* → add `https://github.com/ondrejcech/ha-delonghi-coffeelink`, category *Integration*.
+
+[![Open your Home Assistant instance and open this repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ondrejcech&repository=ha-delonghi-coffeelink&category=integration)
+
+1. Click the badge above. It opens HACS in your Home Assistant with this repository
+   pre-filled, so confirm adding it. Or do it by hand: HACS → ⋮ → *Custom repositories* →
+   add `https://github.com/ondrejcech/ha-delonghi-coffeelink`, category *Integration*.
 2. Install **De'Longhi Coffee Link** and restart Home Assistant.
 
 ### Manual
@@ -48,7 +58,9 @@ Copy `custom_components/delonghi_coffeelink` to `/config/custom_components/` and
 
 ## Setup
 
-*Settings → Devices & services → Add integration → De'Longhi Coffee Link*, then log in with
+[![Open your Home Assistant instance and start setting up De'Longhi Coffee Link.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=delonghi_coffeelink)
+
+Click the badge, or go to *Settings → Devices & services → Add integration → De'Longhi Coffee Link*, then log in with
 your Coffee Link app email and password. The machine on your account is found automatically.
 
 The password is stored in the config entry so the integration can log in again by itself
